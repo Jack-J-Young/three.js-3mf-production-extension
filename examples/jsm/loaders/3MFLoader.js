@@ -1492,22 +1492,38 @@ class ThreeMFLoader extends Loader {
 
 			// start build
 
-			for ( let i = 0; i < modelsKeys.length; i ++ ) {
+			modelsKeys.reverse();
+            let retries = 10;
 
-				const modelsKey = modelsKeys[ i ];
-				const modelData = modelsData[ modelsKey ];
+            while (modelsKeys.length > 0 && retries > 0) {
+			    for ( let i = 0; i < modelsKeys.length; i ++ ) {
+                
+			    	const modelsKey = modelsKeys[ i ];
+			    	const modelData = modelsData[ modelsKey ];
+                
+			    	const objectIds = Object.keys( modelData[ 'resources' ][ 'object' ] );
 
-				const objectIds = Object.keys( modelData[ 'resources' ][ 'object' ] );
-
-				for ( let j = 0; j < objectIds.length; j ++ ) {
-
-					const objectId = objectIds[ j ];
-
-					buildObject( objectId, objects, modelData, textureData );
-
-				}
-
-			}
+                    let errored = false;
+                
+			    	for ( let j = 0; j < objectIds.length; j ++ ) {
+                    
+			    		const objectId = objectIds[ j ];
+                        
+                        try {
+			    		    buildObject( objectId, objects, modelData, textureData );
+                        } catch (_) {
+                            errored = true;
+                        }
+                        
+			    	}
+                    
+                    if (!errored) {
+                        modelsKeys.splice(i, 1);
+                    }
+                
+			    }
+                retries--;
+            }
 
 			return objects;
 
